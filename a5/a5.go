@@ -3,10 +3,12 @@ package a5
 import (
 	"fmt"
 	"math"
+
+	"github.com/as283-ua/crypto/lsfr"
 )
 
 type A5 struct {
-	l1, l2, l3    LSFR
+	l1, l2, l3    lsfr.LSFR
 	ck1, ck2, ck3 byte
 }
 
@@ -62,9 +64,9 @@ func MakeA5(key []byte) (*A5, error) {
 	keyBits := GetBits(key)
 
 	return &A5{
-		LSFR{slots: keyBits[:19], taps: []int{18, 17, 16, 13}},
-		LSFR{slots: keyBits[19:41], taps: []int{21, 20}},
-		LSFR{slots: keyBits[41:], taps: []int{22, 21, 20, 7}},
+		lsfr.LSFR{Slots: keyBits[:19], Taps: []int{18, 17, 16, 13}},
+		lsfr.LSFR{Slots: keyBits[19:41], Taps: []int{21, 20}},
+		lsfr.LSFR{Slots: keyBits[41:], Taps: []int{22, 21, 20, 7}},
 		8, 10, 10,
 	}, nil
 }
@@ -90,5 +92,5 @@ func (cipher A5) Encrypt(data []byte) []byte {
 }
 
 func (cipher A5) String() string {
-	return fmt.Sprintf("{\n\t%v,\n\t%v,\n\t%v\n}", GetBytes(cipher.l1.slots), GetBytes(cipher.l2.slots), GetBytes(cipher.l3.slots))
+	return fmt.Sprintf("{\n\t%v,\n\t%v,\n\t%v\n}", GetBytes(cipher.l1.Slots), GetBytes(cipher.l2.Slots), GetBytes(cipher.l3.Slots))
 }
