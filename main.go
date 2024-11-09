@@ -7,6 +7,7 @@ import (
 
 	"github.com/as283-ua/crypto/a5"
 	"github.com/as283-ua/crypto/arc4"
+	"github.com/as283-ua/crypto/e0"
 )
 
 func arc4main() {
@@ -100,7 +101,67 @@ func a5main() {
 	fmt.Printf("Enc again with correct key:\n%v\n", encAgain)
 }
 
+func e0main() {
+	fmt.Println("\n\033[1mE0 demo\033[0m")
+	k := make([]byte, 16)
+
+	rand.Read(k)
+
+	cipher, err := e0.MakeE0(k)
+
+	if err != nil {
+		fmt.Println(err)
+		panic(1)
+	}
+
+	text := "hola buenas esto es un mensaje"
+	fmt.Printf("Original message: %v\n", text)
+
+	data := []byte(text)
+	fmt.Printf("Data:\n%v\n", data)
+
+	enc := cipher.Encrypt(data)
+	fmt.Printf("Encrypted:\n%v\n\n", enc)
+
+	kBad := make([]byte, 16)
+	rand.Read(kBad)
+	cipherOther, err := e0.MakeE0(kBad)
+
+	if err != nil {
+		fmt.Println(err)
+		panic(1)
+	}
+
+	decBad := cipherOther.Encrypt(enc)
+	fmt.Printf("Unencrypted with bad key:\n%v\n", decBad)
+	fmt.Printf("Equal? %v\n", slices.Equal(decBad, data))
+	fmt.Printf("Text:\n%v\n\n", string(decBad))
+
+	cipher, err = e0.MakeE0(k)
+
+	if err != nil {
+		fmt.Println(err)
+		panic(1)
+	}
+
+	dec := cipher.Encrypt(enc)
+	fmt.Printf("Unencrypted with correct key:\n%v\n", dec)
+	fmt.Printf("Equal? %v\n", slices.Equal(dec, data))
+	fmt.Printf("Text:\n%v\n", string(dec))
+
+	cipher, err = e0.MakeE0(k)
+
+	if err != nil {
+		fmt.Println(err)
+		panic(1)
+	}
+
+	encAgain := cipher.Encrypt(data)
+	fmt.Printf("Enc again with correct key:\n%v\n", encAgain)
+}
+
 func main() {
 	arc4main()
 	a5main()
+	e0main()
 }
