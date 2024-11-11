@@ -163,7 +163,7 @@ func E0main() {
 }
 
 func AesKeyExp() {
-	n := 16
+	n := 32
 	key := make([]byte, n)
 	for i := 0; i < n; i++ {
 		key[i] = byte(i)

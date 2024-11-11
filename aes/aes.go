@@ -65,25 +65,73 @@ func KeyExpansion(key []byte) []uint32 {
 
 	words := make([]uint32, wordsN)
 
-	var i = 0
-	for ; i < wordsInKey; i++ {
+	for i := 0; i < wordsInKey; i++ {
 		words[i] = bits.BytesToUint32(key[i*4 : i*4+4])
 	}
 
-	for j := 1; j <= rounds; j++ {
-		lastWord := words[i-1]
-		rotated := bits.RotateWord(lastWord, 8)
-		g := bits.Uint32ToBytes(rotated)
-		transformWithSbox(g)
-		applyRoundConstant(g, j)
-		gWord := bits.BytesToUint32(g)
+	var gWord uint32
 
-		for k := 0; k < wordsInKey; k++ {
-			words[i] = words[i-wordsInKey] ^ gWord
-			gWord = words[i]
-			i++
+	for i := wordsInKey; i < wordsN; i++ {
+		if i%wordsInKey == 0 {
+			lastWord := words[i-1]
+			rotated := bits.RotateWord(lastWord, 8)
+			g := bits.Uint32ToBytes(rotated)
+			transformWithSbox(g)
+			applyRoundConstant(g, i/wordsInKey)
+			gWord = bits.BytesToUint32(g)
+		} else if i%wordsInKey == 4 {
+			lastWord := words[i-1]
+			g := bits.Uint32ToBytes(lastWord)
+			transformWithSbox(g)
+			gWord = bits.BytesToUint32(g)
+		} else {
+			gWord = words[i-1]
 		}
+
+		words[i] = words[i-wordsInKey] ^ gWord
 	}
 
 	return words
+}
+
+func addRoundKey(state []byte, rKey []uint32) {
+
+}
+
+func subBytes(state []byte) {
+
+}
+
+func shiftRows(state []byte) {
+
+}
+
+func mixColumns(state []byte) {
+
+}
+
+func EncryptBlock(data []byte, key []byte) []byte {
+	if len(data) != 32 {
+		panic("Invalid data block size")
+	}
+
+	state := data
+
+	expKey := KeyExpansion(key)
+	addRoundKey(state, expKey[0:4])
+
+	rounds := keyRoundAssociation[len(key)]
+
+	for i := 1; i <= rounds; i++ {
+		subBytes(state)
+		shiftRows(state)
+		mixColumns(state)
+		addRoundKey(state, expKey[i*4:i*4+4])
+	}
+
+	subBytes(state)
+	shiftRows(state)
+	addRoundKey(state, expKey[0:])
+
+	return state
 }
