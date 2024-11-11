@@ -12,7 +12,7 @@ import (
 	"github.com/as283-ua/crypto/e0"
 )
 
-func arc4main() {
+func Arc4main() {
 	fmt.Println("ARC4 demo")
 	k := make([]byte, 256)
 	rand.Read(k)
@@ -44,7 +44,7 @@ func arc4main() {
 	fmt.Printf("Text:\n%v\n", string(dec))
 }
 
-func a5main() {
+func A5main() {
 	fmt.Println("\n\033[1mA5 demo\033[0m")
 	k := make([]byte, 8)
 
@@ -103,7 +103,7 @@ func a5main() {
 	fmt.Printf("Enc again with correct key:\n%v\n", encAgain)
 }
 
-func e0main() {
+func E0main() {
 	fmt.Println("\n\033[1mE0 demo\033[0m")
 	k := make([]byte, 16)
 
@@ -162,7 +162,7 @@ func e0main() {
 	fmt.Printf("Enc again with correct key:\n%v\n", encAgain)
 }
 
-func aesKeyExp() {
+func AesKeyExp() {
 	n := 16
 	key := make([]byte, n)
 	for i := 0; i < n; i++ {
@@ -173,7 +173,7 @@ func aesKeyExp() {
 	fmt.Println(aes.KeyExpansion(key))
 }
 
-func bitsFunc() {
+func BitsFunc() {
 	a := bits.Uint32ToBytes(0xffeebbaa)
 	b := bits.BytesToUint32(a)
 	c := bits.Uint32ToBytes(b)
@@ -187,8 +187,8 @@ func bitsFunc() {
 }
 
 func main() {
-	// arc4main()
-	// a5main()
-	// e0main()
-	aesKeyExp()
+	// Arc4main()
+	// A5main()
+	// E0main()
+	AesKeyExp()
 }
