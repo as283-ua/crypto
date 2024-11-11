@@ -1,15 +1,18 @@
 package aes
 
+import "github.com/as283-ua/crypto/bits"
+
 type AesCipher struct {
 }
 
 type AesBlock struct {
 }
 
+// bytes to rounds
 var keyRoundAssociation = map[int]int{
-	128: 10,
-	192: 12,
-	256: 14,
+	16: 10,
+	24: 12,
+	32: 14,
 }
 
 var sBox = [][]byte{
@@ -39,24 +42,6 @@ var roundConstants = []byte{
 	0xD8, 0xAB, 0x4D,
 }
 
-func bytesToUint32(bytes []byte) uint32 {
-	var res uint32 = 0
-
-	for i, v := range bytes {
-		res &= uint32(v << (i * 8))
-	}
-
-	return res
-}
-
-func uint32ToBytes(value uint32) []byte {
-	return []byte{byte(value), byte(value >> 8), byte(value >> 16), byte(value >> 24)}
-}
-
-func rotateWord(word uint32, bits int) uint32 {
-	return word<<bits | (word & 0xff000000 >> (32 - bits))
-}
-
 func transformWithSbox(bytes []byte) {
 	for i, b := range bytes {
 		x := b & 0x0f
@@ -71,6 +56,9 @@ func applyRoundConstant(bytes []byte, round int) {
 }
 
 func KeyExpansion(key []byte) []uint32 {
+	if len(key)%8 != 0 || len(key) > 32 || len(key) < 8 {
+		panic("Key size must be 16, 24 or 32")
+	}
 	rounds := keyRoundAssociation[len(key)]
 	wordsN := 4 * (rounds + 1)
 	wordsInKey := len(key) / 4
@@ -79,19 +67,21 @@ func KeyExpansion(key []byte) []uint32 {
 
 	var i = 0
 	for ; i < wordsInKey; i++ {
-		words[i] = bytesToUint32(key[i : i+4])
+		words[i] = bits.BytesToUint32(key[i*4 : i*4+4])
 	}
 
-	for j := 0; j < rounds; j++ {
+	for j := 1; j <= rounds; j++ {
 		lastWord := words[i-1]
-		g := uint32ToBytes(rotateWord(lastWord, 8))
+		rotated := bits.RotateWord(lastWord, 8)
+		g := bits.Uint32ToBytes(rotated)
 		transformWithSbox(g)
 		applyRoundConstant(g, j)
-		gWord := bytesToUint32(g)
+		gWord := bits.BytesToUint32(g)
 
 		for k := 0; k < wordsInKey; k++ {
-			words[i] ^= gWord
+			words[i] = words[i-wordsInKey] ^ gWord
 			gWord = words[i]
+			i++
 		}
 	}
 

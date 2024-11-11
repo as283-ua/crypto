@@ -6,7 +6,9 @@ import (
 	"slices"
 
 	"github.com/as283-ua/crypto/a5"
+	"github.com/as283-ua/crypto/aes"
 	"github.com/as283-ua/crypto/arc4"
+	"github.com/as283-ua/crypto/bits"
 	"github.com/as283-ua/crypto/e0"
 )
 
@@ -160,8 +162,33 @@ func e0main() {
 	fmt.Printf("Enc again with correct key:\n%v\n", encAgain)
 }
 
+func aesKeyExp() {
+	n := 16
+	key := make([]byte, n)
+	for i := 0; i < n; i++ {
+		key[i] = byte(i)
+	}
+
+	fmt.Println(key)
+	fmt.Println(aes.KeyExpansion(key))
+}
+
+func bitsFunc() {
+	a := bits.Uint32ToBytes(0xffeebbaa)
+	b := bits.BytesToUint32(a)
+	c := bits.Uint32ToBytes(b)
+	r := bits.RotateWord(b, 8)
+	o := bits.Uint32ToBytes(r)
+	fmt.Println(a)
+	fmt.Printf("%x\n", b)
+	fmt.Println(c)
+	fmt.Println(r)
+	fmt.Println(o)
+}
+
 func main() {
-	arc4main()
-	a5main()
-	e0main()
+	// arc4main()
+	// a5main()
+	// e0main()
+	aesKeyExp()
 }

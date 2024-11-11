@@ -45,3 +45,21 @@ func BitsString(data []bool) string {
 
 	return res
 }
+
+func BytesToUint32(bytes []byte) uint32 {
+	var res uint32 = 0
+
+	for i, v := range bytes {
+		res |= uint32(v) << (24 - i*8)
+	}
+
+	return res
+}
+
+func Uint32ToBytes(value uint32) []byte {
+	return []byte{byte(value >> 24), byte(value >> 16), byte(value >> 8), byte(value)}
+}
+
+func RotateWord(word uint32, bits int) uint32 {
+	return word<<bits | (word & 0xff000000 >> (32 - bits))
+}
