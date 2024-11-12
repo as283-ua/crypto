@@ -132,7 +132,7 @@ func SubBytes(bytes []byte) {
 		x := b & 0x0f
 		y := b & 0xf0 >> 4
 
-		bytes[i] = sBox[x][y]
+		bytes[i] = sBox[y][x]
 	}
 }
 
@@ -141,7 +141,7 @@ func InvSubBytes(bytes []byte) {
 		x := b & 0x0f
 		y := b & 0xf0 >> 4
 
-		bytes[i] = invSBox[x][y]
+		bytes[i] = invSBox[y][x]
 	}
 }
 
