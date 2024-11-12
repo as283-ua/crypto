@@ -1,6 +1,10 @@
 package aes
 
-import "github.com/as283-ua/crypto/bits"
+import (
+	"fmt"
+
+	"github.com/as283-ua/crypto/bits"
+)
 
 type AesCipher struct {
 }
@@ -149,7 +153,7 @@ func ShiftRows(state []byte) {
 	row := make([]byte, 4)
 	for i := 1; i < 4; i++ {
 		row[0], row[1], row[2], row[3] = state[i], state[i+4], state[i+8], state[i+12]
-		state[i], state[i+4], state[i+8], state[i+12] = row[(-i+4)%4], row[(1-i+4)%4], row[(2-i+4)%4], row[(3-i+4)%4]
+		state[i], state[i+4], state[i+8], state[i+12] = row[(i)%4], row[(1+i)%4], row[(2+i)%4], row[(3+i)%4]
 	}
 }
 
@@ -157,7 +161,7 @@ func InvShiftRows(state []byte) {
 	row := make([]byte, 4)
 	for i := 1; i < 4; i++ {
 		row[0], row[1], row[2], row[3] = state[i], state[i+4], state[i+8], state[i+12]
-		state[i], state[i+4], state[i+8], state[i+12] = row[(i)%4], row[(1+i)%4], row[(2+i)%4], row[(3+i)%4]
+		state[i], state[i+4], state[i+8], state[i+12] = row[(-i+4)%4], row[(1-i+4)%4], row[(2-i+4)%4], row[(3-i+4)%4]
 	}
 }
 
@@ -183,13 +187,20 @@ func MixColumns(state []byte) {
 		for j := 0; j < 4; j++ {
 			var c byte = 0
 			for k := 0; k < 4; k++ {
-				c ^= galoisMult(mixColsTable[i][k], state[j*4+k])
+				mul := galoisMult(mixColsTable[i][k], state[j*4+k])
+				fmt.Printf("i=%v, j=%v, k=%v: %02x⊗%02x=%02x\n", i, j, k, mixColsTable[i][k], state[j*4+k], mul)
+				c ^= mul
 			}
 			temp[j] = c
+			fmt.Println()
 		}
 		for j := 0; j < 4; j++ {
+			fmt.Printf("j=%v, i=%v: %02x -> %02x\n", j, i, state[j*4+i], temp[i])
 			state[j*4+i] = temp[i]
 		}
+
+		fmt.Println()
+		fmt.Println()
 	}
 }
 

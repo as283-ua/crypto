@@ -204,6 +204,14 @@ func getKey() []byte {
 	}
 }
 
+func StateString(state []byte) string {
+	res := ""
+	for i := 0; i < 4; i++ {
+		res += fmt.Sprintf("%02x\t%02x\t%02x\t%02x\n", state[i], state[i+4], state[i+8], state[i+12])
+	}
+	return res
+}
+
 func AesInverseTest() {
 	state := getState()
 	key := getKey()
@@ -213,26 +221,40 @@ func AesInverseTest() {
 	roundKey := expKey[0:4]
 	fmt.Println("round key:", roundKey)
 
-	fmt.Println("init state:", state)
+	fmt.Println("init state:")
+	fmt.Print(StateString(state))
+
 	aes.AddRoundKey(state, roundKey)
-	fmt.Println("state after addroundkey:", state)
+	fmt.Println("\nstate after addroundkey:")
+	fmt.Print(StateString(state))
+
 	aes.AddRoundKey(state, roundKey)
-	fmt.Println("state after addroundkey:", state)
+	fmt.Println("state after addroundkey:")
+	fmt.Print(StateString(state))
 
 	aes.SubBytes(state)
-	fmt.Println("\nSubBytes:", state)
+	fmt.Println("\nSubBytes:")
+	fmt.Print(StateString(state))
+
 	aes.InvSubBytes(state)
-	fmt.Println("InvSubBytes:", state)
+	fmt.Println("InvSubBytes:")
+	fmt.Print(StateString(state))
 
 	aes.ShiftRows(state)
-	fmt.Println("\nShiftRows:", state)
+	fmt.Println("\nShiftRows:")
+	fmt.Print(StateString(state))
+
 	aes.InvShiftRows(state)
-	fmt.Println("InvShiftRows:", state)
+	fmt.Println("InvShiftRows:")
+	fmt.Print(StateString(state))
 
 	aes.MixColumns(state)
-	fmt.Println("\nMixColumns:", state)
+	fmt.Println("\nMixColumns:")
+	fmt.Print(StateString(state))
+
 	aes.InvMixColumns(state)
-	fmt.Println("InvMixColumns:", state)
+	fmt.Println("InvMixColumns:")
+	fmt.Print(StateString(state))
 }
 
 func main() {
