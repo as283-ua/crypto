@@ -100,13 +100,13 @@ func KeyExpansion(key []byte) []uint32 {
 			lastWord := words[i-1]
 			rotated := bits.RotateWord(lastWord, 8)
 			g := bits.Uint32ToBytes(rotated)
-			subBytes(g)
+			SubBytes(g)
 			applyRoundConstant(g, i/wordsInKey)
 			gWord = bits.BytesToUint32(g)
 		} else if i%wordsInKey == 4 {
 			lastWord := words[i-1]
 			g := bits.Uint32ToBytes(lastWord)
-			subBytes(g)
+			SubBytes(g)
 			gWord = bits.BytesToUint32(g)
 		} else {
 			gWord = words[i-1]
@@ -118,7 +118,7 @@ func KeyExpansion(key []byte) []uint32 {
 	return words
 }
 
-func addRoundKey(state []byte, rKey []uint32) {
+func AddRoundKey(state []byte, rKey []uint32) {
 	for i, word := range rKey {
 		wordBytes := bits.Uint32ToBytes(word)
 		for j, b := range wordBytes {
@@ -127,7 +127,7 @@ func addRoundKey(state []byte, rKey []uint32) {
 	}
 }
 
-func subBytes(bytes []byte) {
+func SubBytes(bytes []byte) {
 	for i, b := range bytes {
 		x := b & 0x0f
 		y := b & 0xf0 >> 4
@@ -136,7 +136,7 @@ func subBytes(bytes []byte) {
 	}
 }
 
-func invSubBytes(bytes []byte) {
+func InvSubBytes(bytes []byte) {
 	for i, b := range bytes {
 		x := b & 0x0f
 		y := b & 0xf0 >> 4
@@ -145,15 +145,15 @@ func invSubBytes(bytes []byte) {
 	}
 }
 
-func shiftRows(state []byte) {
+func ShiftRows(state []byte) {
 	row := make([]byte, 4)
 	for i := 1; i < 4; i++ {
 		row[0], row[1], row[2], row[3] = state[i], state[i+4], state[i+8], state[i+12]
-		state[i], state[i+4], state[i+8], state[i+12] = row[(-i)%4], row[(1-i)%4], row[(2-i)%4], row[(3-i)%4]
+		state[i], state[i+4], state[i+8], state[i+12] = row[(-i+4)%4], row[(1-i+4)%4], row[(2-i+4)%4], row[(3-i+4)%4]
 	}
 }
 
-func invShiftRows(state []byte) {
+func InvShiftRows(state []byte) {
 	row := make([]byte, 4)
 	for i := 1; i < 4; i++ {
 		row[0], row[1], row[2], row[3] = state[i], state[i+4], state[i+8], state[i+12]
@@ -177,7 +177,7 @@ func galoisMult(a byte, b byte) byte {
 	return p
 }
 
-func mixColumns(state []byte) {
+func MixColumns(state []byte) {
 	for i := 0; i < 4; i++ {
 		var temp [4]byte
 		for j := 0; j < 4; j++ {
@@ -193,7 +193,7 @@ func mixColumns(state []byte) {
 	}
 }
 
-func invMixColumns(state []byte) {
+func InvMixColumns(state []byte) {
 	for i := 0; i < 4; i++ {
 		var temp [4]byte
 		for j := 0; j < 4; j++ {
@@ -217,20 +217,20 @@ func EncryptBlock(data []byte, key []byte) []byte {
 	state := data
 
 	expKey := KeyExpansion(key)
-	addRoundKey(state, expKey[0:4])
+	AddRoundKey(state, expKey[0:4])
 
 	rounds := keyRoundAssociation[len(key)]
 
 	for i := 1; i <= rounds; i++ {
-		subBytes(state)
-		shiftRows(state)
-		mixColumns(state)
-		addRoundKey(state, expKey[i*4:i*4+4])
+		SubBytes(state)
+		ShiftRows(state)
+		MixColumns(state)
+		AddRoundKey(state, expKey[i*4:i*4+4])
 	}
 
-	subBytes(state)
-	shiftRows(state)
-	addRoundKey(state, expKey[0:])
+	SubBytes(state)
+	ShiftRows(state)
+	AddRoundKey(state, expKey[0:])
 
 	return state
 }
@@ -244,18 +244,18 @@ func DecryptBlock(data []byte, key []byte) []byte {
 	expKey := KeyExpansion(key)
 	rounds := keyRoundAssociation[len(key)]
 
-	addRoundKey(state, expKey[rounds*4:rounds*4+4])
+	AddRoundKey(state, expKey[rounds*4:rounds*4+4])
 
 	for i := rounds - 1; i >= 1; i-- {
-		invShiftRows(state)
-		invSubBytes(state)
-		addRoundKey(state, expKey[i*4:i*4+4])
-		invMixColumns(state)
+		InvShiftRows(state)
+		InvSubBytes(state)
+		AddRoundKey(state, expKey[i*4:i*4+4])
+		InvMixColumns(state)
 	}
 
-	invShiftRows(state)
-	invSubBytes(state)
-	addRoundKey(state, expKey[0:4])
+	InvShiftRows(state)
+	InvSubBytes(state)
+	AddRoundKey(state, expKey[0:4])
 
 	return state
 }

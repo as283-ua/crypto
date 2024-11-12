@@ -186,9 +186,58 @@ func BitsFunc() {
 	fmt.Println(o)
 }
 
+func getState() []byte {
+	return []byte{
+		0x01, 0x02, 0x03, 0x04,
+		0x11, 0x12, 0x13, 0x14,
+		0x21, 0x22, 0x23, 0x24,
+		0x31, 0x32, 0x33, 0x34,
+	}
+}
+
+func getKey() []byte {
+	return []byte{
+		0xaa, 0xab, 0xac, 0xad,
+		0xba, 0xbb, 0xbc, 0xbd,
+		0xca, 0xcb, 0xcc, 0xcd,
+		0xda, 0xdb, 0xdc, 0xdd,
+	}
+}
+
+func AesInverseTest() {
+	state := getState()
+	key := getKey()
+
+	expKey := aes.KeyExpansion(key)
+
+	roundKey := expKey[0:4]
+	fmt.Println("round key:", roundKey)
+
+	fmt.Println("init state:", state)
+	aes.AddRoundKey(state, roundKey)
+	fmt.Println("state after addroundkey:", state)
+	aes.AddRoundKey(state, roundKey)
+	fmt.Println("state after addroundkey:", state)
+
+	aes.SubBytes(state)
+	fmt.Println("\nSubBytes:", state)
+	aes.InvSubBytes(state)
+	fmt.Println("InvSubBytes:", state)
+
+	aes.ShiftRows(state)
+	fmt.Println("\nShiftRows:", state)
+	aes.InvShiftRows(state)
+	fmt.Println("InvShiftRows:", state)
+
+	aes.MixColumns(state)
+	fmt.Println("\nMixColumns:", state)
+	aes.InvMixColumns(state)
+	fmt.Println("InvMixColumns:", state)
+}
+
 func main() {
 	// Arc4main()
 	// A5main()
 	// E0main()
-	AesKeyExp()
+	AesInverseTest()
 }
