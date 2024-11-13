@@ -195,6 +195,7 @@ func getState() []byte {
 	}
 }
 
+// 16 byte key for aes128
 func getKey() []byte {
 	return []byte{
 		0xaa, 0xab, 0xac, 0xad,
@@ -265,10 +266,25 @@ func Galois() {
 	fmt.Printf("%v⊗%v=%v\n", a, b, aes.GaloisMult(a, b))
 }
 
+func EncAesBlock() {
+	message := "hi this is a msg" //16 byte block
+	block := []byte(message)
+	key := getKey()
+
+	fmt.Printf("Original message: \"%v\"\nMessage as bytes: %v\nKey: %v\n\n", message, block, key)
+
+	enc := aes.EncryptBlock(block, key)
+	fmt.Printf("Encrypted message block: %v\nDecoded message: %v\n\n", enc, string(enc))
+
+	dec := aes.DecryptBlock(enc, key)
+	fmt.Printf("Decrypted message block: %v\nDecoded message: \"%v\"\n", dec, string(dec))
+}
+
 func main() {
 	// Arc4main()
 	// A5main()
 	// E0main()
-	AesInverseTest()
+	// AesInverseTest()
 	// Galois()
+	EncAesBlock()
 }

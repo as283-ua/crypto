@@ -1,6 +1,8 @@
 package aes
 
 import (
+	"fmt"
+
 	"github.com/as283-ua/crypto/bits"
 )
 
@@ -121,6 +123,9 @@ func KeyExpansion(key []byte) []uint32 {
 }
 
 func AddRoundKey(state []byte, rKey []uint32) {
+	if len(state) != 16 || len(rKey) != 4 {
+		panic(fmt.Sprintf("State must be 16 bytes long and rkey 4 words long: state=%v, rKey=%v", len(state), len(rKey)))
+	}
 	for i, word := range rKey {
 		wordBytes := bits.Uint32ToBytes(word)
 		for j, b := range wordBytes {
@@ -213,14 +218,15 @@ func EncryptBlock(data []byte, key []byte) []byte {
 		panic("Invalid data block size")
 	}
 
-	state := data
+	state := make([]byte, len(data))
+	copy(state, data)
 
 	expKey := KeyExpansion(key)
 	AddRoundKey(state, expKey[0:4])
 
 	rounds := keyRoundAssociation[len(key)]
 
-	for i := 1; i <= rounds; i++ {
+	for i := 1; i < rounds; i++ {
 		SubBytes(state)
 		ShiftRows(state)
 		MixColumns(state)
@@ -229,7 +235,7 @@ func EncryptBlock(data []byte, key []byte) []byte {
 
 	SubBytes(state)
 	ShiftRows(state)
-	AddRoundKey(state, expKey[0:])
+	AddRoundKey(state, expKey[rounds*4:rounds*4+4])
 
 	return state
 }
@@ -239,7 +245,9 @@ func DecryptBlock(data []byte, key []byte) []byte {
 		panic("Invalid data block size")
 	}
 
-	state := data
+	state := make([]byte, len(data))
+	copy(state, data)
+
 	expKey := KeyExpansion(key)
 	rounds := keyRoundAssociation[len(key)]
 
