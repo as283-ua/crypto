@@ -1,8 +1,6 @@
 package aes
 
 import (
-	"fmt"
-
 	"github.com/as283-ua/crypto/bits"
 )
 
@@ -73,10 +71,10 @@ var mixColsTable = [][]byte{
 }
 
 var invMixColsTable = [][]byte{
-	{0x63, 0x47, 0xa2, 0xf0},
-	{0x9c, 0x63, 0xc5, 0xf2},
-	{0x7b, 0x7c, 0xf0, 0xab},
-	{0xca, 0xaf, 0x76, 0x76},
+	{14, 11, 13, 9},
+	{9, 14, 11, 13},
+	{13, 9, 14, 11},
+	{11, 13, 9, 14},
 }
 
 func applyRoundConstant(bytes []byte, round int) {
@@ -165,15 +163,15 @@ func InvShiftRows(state []byte) {
 	}
 }
 
-func galoisMult(a byte, b byte) byte {
+func GaloisMult(a byte, b byte) byte {
 	var p byte = 0
-	for i := 0; i < 8; i++ {
+	for b != 0 {
 		if b&1 != 0 {
 			p ^= a
 		}
-		highBitSet := a & 0x80
+		highBit := a & 0x80
 		a <<= 1
-		if highBitSet != 0 {
+		if highBit != 0 {
 			a ^= 0x1b
 		}
 		b >>= 1
@@ -181,43 +179,33 @@ func galoisMult(a byte, b byte) byte {
 	return p
 }
 
-func MixColumns(state []byte) {
-	for i := 0; i < 4; i++ {
-		var temp [4]byte
-		for j := 0; j < 4; j++ {
-			var c byte = 0
-			for k := 0; k < 4; k++ {
-				mul := galoisMult(mixColsTable[i][k], state[j*4+k])
-				fmt.Printf("i=%v, j=%v, k=%v: %02x⊗%02x=%02x\n", i, j, k, mixColsTable[i][k], state[j*4+k], mul)
-				c ^= mul
-			}
-			temp[j] = c
-			fmt.Println()
-		}
-		for j := 0; j < 4; j++ {
-			fmt.Printf("j=%v, i=%v: %02x -> %02x\n", j, i, state[j*4+i], temp[i])
-			state[j*4+i] = temp[i]
-		}
-
-		fmt.Println()
-		fmt.Println()
+func RowMatrixMult(a []byte, b []byte) byte {
+	if len(a) != 4 || len(b) != 4 {
+		panic("Matrix must be of size 4")
 	}
+
+	return GaloisMult(a[0], b[0]) ^ GaloisMult(a[1], b[1]) ^ GaloisMult(a[2], b[2]) ^ GaloisMult(a[3], b[3])
+}
+
+func MatrixMult(a []byte, b [][]byte) []byte {
+	res := make([]byte, 16)
+	for bRow := 0; bRow < 4; bRow++ {
+		for aColumn := 0; aColumn < 4; aColumn++ {
+			rowMult := RowMatrixMult(b[bRow], a[aColumn*4:aColumn*4+4])
+			res[aColumn*4+aColumn] = rowMult
+		}
+	}
+	return res
+}
+
+func MixColumns(state []byte) {
+	res := MatrixMult(state, mixColsTable) //avoid modifying state while calculating matrix multiplication
+	copy(res, state)
 }
 
 func InvMixColumns(state []byte) {
-	for i := 0; i < 4; i++ {
-		var temp [4]byte
-		for j := 0; j < 4; j++ {
-			var c byte = 0
-			for k := 0; k < 4; k++ {
-				c ^= galoisMult(invMixColsTable[i][k], state[j*4+k])
-			}
-			temp[j] = c
-		}
-		for j := 0; j < 4; j++ {
-			state[j*4+i] = temp[i]
-		}
-	}
+	res := MatrixMult(state, invMixColsTable)
+	copy(res, state)
 }
 
 func EncryptBlock(data []byte, key []byte) []byte {

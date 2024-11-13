@@ -257,9 +257,18 @@ func AesInverseTest() {
 	fmt.Print(StateString(state))
 }
 
+func Galois() {
+	var a byte = 0x1a
+	var b byte = 0x16
+	fmt.Printf("0x%02x⊗0x%02x=0x%02x\n", a, b, aes.GaloisMult(a, b))
+	fmt.Printf("0x%b⊗0x%b=0x%b\n", a, b, aes.GaloisMult(a, b))
+	fmt.Printf("%v⊗%v=%v\n", a, b, aes.GaloisMult(a, b))
+}
+
 func main() {
 	// Arc4main()
 	// A5main()
 	// E0main()
 	AesInverseTest()
+	// Galois()
 }
