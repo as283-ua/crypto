@@ -50,16 +50,22 @@ func BytesToUint32(bytes []byte) uint32 {
 	var res uint32 = 0
 
 	for i, v := range bytes {
-		res |= uint32(v) << (24 - i*8)
+		res |= uint32(v) << (i * 8)
 	}
 
 	return res
 }
 
 func Uint32ToBytes(value uint32) []byte {
-	return []byte{byte(value >> 24), byte(value >> 16), byte(value >> 8), byte(value)}
+	return []byte{byte(value), byte(value >> 8), byte(value >> 16), byte(value >> 24)}
 }
 
 func RotateWord(word uint32, bits int) uint32 {
-	return word<<bits | (word & 0xff000000 >> (32 - bits))
+	if bits < 0 {
+		bits = -bits
+		var mask uint32 = 0xffffffff >> bits
+		return word>>bits | (word & mask << (32 - bits))
+	}
+	var mask uint32 = 0xffffffff << bits
+	return word<<bits | (word & mask >> (32 - bits))
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/as283-ua/crypto/a5"
 	"github.com/as283-ua/crypto/aes"
 	"github.com/as283-ua/crypto/arc4"
-	"github.com/as283-ua/crypto/bits"
 	"github.com/as283-ua/crypto/e0"
 )
 
@@ -162,39 +161,6 @@ func E0main() {
 	fmt.Printf("Enc again with correct key:\n%v\n", encAgain)
 }
 
-func AesKeyExp() {
-	n := 32
-	key := make([]byte, n)
-	for i := 0; i < n; i++ {
-		key[i] = byte(i)
-	}
-
-	fmt.Println(key)
-	fmt.Println(aes.KeyExpansion(key))
-}
-
-func BitsFunc() {
-	a := bits.Uint32ToBytes(0xffeebbaa)
-	b := bits.BytesToUint32(a)
-	c := bits.Uint32ToBytes(b)
-	r := bits.RotateWord(b, 8)
-	o := bits.Uint32ToBytes(r)
-	fmt.Println(a)
-	fmt.Printf("%x\n", b)
-	fmt.Println(c)
-	fmt.Println(r)
-	fmt.Println(o)
-}
-
-func getState() []byte {
-	return []byte{
-		0x01, 0x02, 0x03, 0x04,
-		0x11, 0x12, 0x13, 0x14,
-		0x21, 0x22, 0x23, 0x24,
-		0x31, 0x32, 0x33, 0x34,
-	}
-}
-
 // 16 byte key for aes128
 func getKey() []byte {
 	return []byte{
@@ -205,68 +171,7 @@ func getKey() []byte {
 	}
 }
 
-func StateString(state []byte) string {
-	res := ""
-	for i := 0; i < 4; i++ {
-		res += fmt.Sprintf("%02x\t%02x\t%02x\t%02x\n", state[i], state[i+4], state[i+8], state[i+12])
-	}
-	return res
-}
-
-func AesInverseTest() {
-	state := getState()
-	key := getKey()
-
-	expKey := aes.KeyExpansion(key)
-
-	roundKey := expKey[0:4]
-	fmt.Println("round key:", roundKey)
-
-	fmt.Println("init state:")
-	fmt.Print(StateString(state))
-
-	aes.AddRoundKey(state, roundKey)
-	fmt.Println("\nstate after addroundkey:")
-	fmt.Print(StateString(state))
-
-	aes.AddRoundKey(state, roundKey)
-	fmt.Println("state after addroundkey:")
-	fmt.Print(StateString(state))
-
-	aes.SubBytes(state)
-	fmt.Println("\nSubBytes:")
-	fmt.Print(StateString(state))
-
-	aes.InvSubBytes(state)
-	fmt.Println("InvSubBytes:")
-	fmt.Print(StateString(state))
-
-	aes.ShiftRows(state)
-	fmt.Println("\nShiftRows:")
-	fmt.Print(StateString(state))
-
-	aes.InvShiftRows(state)
-	fmt.Println("InvShiftRows:")
-	fmt.Print(StateString(state))
-
-	aes.MixColumns(state)
-	fmt.Println("\nMixColumns:")
-	fmt.Print(StateString(state))
-
-	aes.InvMixColumns(state)
-	fmt.Println("InvMixColumns:")
-	fmt.Print(StateString(state))
-}
-
-func Galois() {
-	var a byte = 0x1a
-	var b byte = 0x16
-	fmt.Printf("0x%02x⊗0x%02x=0x%02x\n", a, b, aes.GaloisMult(a, b))
-	fmt.Printf("0x%b⊗0x%b=0x%b\n", a, b, aes.GaloisMult(a, b))
-	fmt.Printf("%v⊗%v=%v\n", a, b, aes.GaloisMult(a, b))
-}
-
-func EncAesBlock() {
+func main() {
 	message := "hi this is a msg" //16 byte block
 	block := []byte(message)
 	key := getKey()
@@ -278,13 +183,4 @@ func EncAesBlock() {
 
 	dec := aes.DecryptBlock(enc, key)
 	fmt.Printf("Decrypted message block: %v\nDecoded message: \"%v\"\n", dec, string(dec))
-}
-
-func main() {
-	// Arc4main()
-	// A5main()
-	// E0main()
-	// AesInverseTest()
-	// Galois()
-	EncAesBlock()
 }
