@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/as283-ua/crypto/bits"
-	"github.com/as283-ua/crypto/lsfr"
+	"github.com/as283-ua/crypto/lfsr"
 )
 
 type E0 struct {
-	lsfrs []lsfr.LSFR
+	lfsrs []lfsr.LSFR
 }
 
 func MakeE0(key []byte) (*E0, error) {
@@ -18,7 +18,7 @@ func MakeE0(key []byte) (*E0, error) {
 
 	keyBits := bits.GetBits(key)
 
-	lsfrs := make([]lsfr.LSFR, 4)
+	lsfrs := make([]lfsr.LSFR, 4)
 	sizes := []int{25, 31, 33, 39}
 	taps := [][]int{
 		{18, 17, 16, 13},
@@ -29,7 +29,7 @@ func MakeE0(key []byte) (*E0, error) {
 
 	bitsUsed := 0
 	for i, v := range sizes {
-		lsfrs[i] = lsfr.LSFR{Slots: keyBits[bitsUsed : bitsUsed+v], Taps: taps[i]}
+		lsfrs[i] = lfsr.LSFR{Slots: keyBits[bitsUsed : bitsUsed+v], Taps: taps[i]}
 		bitsUsed += v
 	}
 
@@ -38,16 +38,16 @@ func MakeE0(key []byte) (*E0, error) {
 
 func (cipher *E0) ChangeStateLsfrs() {
 	pattern := []bool{false, true, true, true, false, true, true, false, true, false, false}
-	for i := 0; i < len(cipher.lsfrs); i++ {
-		for j := 0; j < len(cipher.lsfrs[i].Slots); j++ {
-			cipher.lsfrs[i].Slots[j] = cipher.lsfrs[i].Slots[j] != pattern[i%len(pattern)]
+	for i := 0; i < len(cipher.lfsrs); i++ {
+		for j := 0; j < len(cipher.lfsrs[i].Slots); j++ {
+			cipher.lfsrs[i].Slots[j] = cipher.lfsrs[i].Slots[j] != pattern[i%len(pattern)]
 		}
 	}
 }
 
 func (cipher *E0) Next() bool {
 	res := false
-	for _, v := range cipher.lsfrs {
+	for _, v := range cipher.lfsrs {
 		res = res != v.Next()
 	}
 

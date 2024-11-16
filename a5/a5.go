@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/as283-ua/crypto/bits"
-	"github.com/as283-ua/crypto/lsfr"
+	"github.com/as283-ua/crypto/lfsr"
 )
 
 type A5 struct {
-	l1, l2, l3 lsfr.LSFR
+	l1, l2, l3 lfsr.LSFR
 }
 
 func MakeA5(key []byte) (*A5, error) {
@@ -19,9 +19,9 @@ func MakeA5(key []byte) (*A5, error) {
 	keyBits := bits.GetBits(key)
 
 	return &A5{
-		lsfr.LSFR{Slots: keyBits[:19], Taps: []int{18, 17, 16, 13}},
-		lsfr.LSFR{Slots: keyBits[19:41], Taps: []int{21, 20}},
-		lsfr.LSFR{Slots: keyBits[41:], Taps: []int{22, 21, 20, 7}},
+		lfsr.LSFR{Slots: keyBits[:19], Taps: []int{18, 17, 16, 13}},
+		lfsr.LSFR{Slots: keyBits[19:41], Taps: []int{21, 20}},
+		lfsr.LSFR{Slots: keyBits[41:], Taps: []int{22, 21, 20, 7}},
 	}, nil
 }
 
