@@ -171,6 +171,13 @@ func getKey() []byte {
 	}
 }
 
+func getEncrypted(msg string) []byte {
+	block := []byte(msg)
+	key := getKey()
+
+	return aes.EncryptBlock(block, key)
+}
+
 func main() {
 	message := "hi this is a msg" //16 byte block
 	block := []byte(message)
@@ -183,4 +190,8 @@ func main() {
 
 	dec := aes.DecryptBlock(enc, key)
 	fmt.Printf("Decrypted message block: %v\nDecoded message: \"%v\"\n", dec, string(dec))
+
+	fmt.Println("Comparing slight differences in message input:")
+	fmt.Printf("aaaa %v\n\n", getEncrypted("hi this is a msg"))
+	fmt.Printf("aaaa %v\n", getEncrypted("hi this is a msh"))
 }
