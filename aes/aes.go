@@ -65,73 +65,14 @@ var roundConstants = []byte{
 	0xD8, 0xAB, 0x4D,
 }
 
-/*
-Expresses a matrix as an array, groups of x elements represent a column
-*/
-type BMatrix struct {
-	Array     []byte
-	Dimension int
-}
-
-func (m *BMatrix) GetRow(row int) []byte {
-	res := make([]byte, m.Dimension)
-
-	for i := 0; i < m.Dimension; i++ {
-		res[i] = m.Array[m.Dimension*i+row]
-	}
-
-	return res
-}
-
-func (m *BMatrix) GetCol(col int) []byte {
-	startIdx := m.Dimension * col
-	return m.Array[startIdx : startIdx+4]
-}
-
-func GetMatrix(m [][]byte) BMatrix {
-	colSize := len(m[0])
-	res := BMatrix{Array: make([]byte, len(m)*len(m[0])), Dimension: colSize}
-	for i, v := range m {
-		for j, b := range v {
-			res.Array[i*colSize+j] = b
-		}
-	}
-	return res
-}
-
-func GetDefaultMatrix(size int) BMatrix {
-	res := BMatrix{Array: make([]byte, size*size), Dimension: size}
-	return res
-}
-
-func RowMatrixMult(a []byte, b []byte) byte {
-	if len(a) != 4 || len(b) != 4 {
-		panic("Matrix must be of size 4")
-	}
-
-	return GaloisMult(a[0], b[0]) ^ GaloisMult(a[1], b[1]) ^ GaloisMult(a[2], b[2]) ^ GaloisMult(a[3], b[3])
-}
-
-func MatrixMult(mat, other BMatrix) BMatrix {
-	res := GetDefaultMatrix(4)
-
-	for row := 0; row < 4; row++ {
-		for col := 0; col < 4; col++ {
-			rowMult := RowMatrixMult(mat.GetRow(row), other.GetCol(col))
-			res.Array[col*res.Dimension+row] = rowMult
-		}
-	}
-	return res
-}
-
-var mixColsTable = GetMatrix([][]byte{
+var mixColsTable = GetMatrix2D([][]byte{
 	{2, 3, 1, 1},
 	{1, 2, 3, 1},
 	{1, 1, 2, 3},
 	{3, 1, 1, 2},
 })
 
-var invMixColsTable = GetMatrix([][]byte{
+var invMixColsTable = GetMatrix2D([][]byte{
 	{14, 11, 13, 9},
 	{9, 14, 11, 13},
 	{13, 9, 14, 11},
@@ -225,22 +166,6 @@ func InvShiftRows(state []byte) {
 		row[0], row[1], row[2], row[3] = state[i], state[i+4], state[i+8], state[i+12]
 		state[i], state[i+4], state[i+8], state[i+12] = row[(-i+4)%4], row[(1-i+4)%4], row[(2-i+4)%4], row[(3-i+4)%4]
 	}
-}
-
-func GaloisMult(a byte, b byte) byte {
-	var p byte = 0
-	for b != 0 {
-		if b&1 != 0 {
-			p ^= a
-		}
-		highBit := a & 0x80
-		a <<= 1
-		if highBit != 0 {
-			a ^= 0x1b
-		}
-		b >>= 1
-	}
-	return p
 }
 
 func MixColumns(state []byte) {
